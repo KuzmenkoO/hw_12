@@ -7,8 +7,10 @@ public class MainTest {
     public static void main(String[] args) {
         //Завдання №1
         System.out.println("Завдання №1");
+
+        String input = "OOHHHH";
         TaskOne taskOne = new TaskOne();
-        taskOne.waterMolecules(10);
+        taskOne.waterMolecules(input);
         System.out.println();
 
 

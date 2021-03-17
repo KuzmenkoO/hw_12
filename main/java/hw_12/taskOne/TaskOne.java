@@ -8,13 +8,13 @@ public class TaskOne {
     public static Phaser phaser = new Phaser(3);
     public int countMolecules;
 
-    public void waterMolecules(int countMolecules) {
-        this.countMolecules = countMolecules;
+    public void waterMolecules(String input) {
+        this.countMolecules = input.length() / 3;
         ExecutorService service = Executors.newFixedThreadPool(countMolecules * 3);
         for (int i = 0; i < countMolecules; i++) {
-            service.submit(new OxygenThread(phaser, i));
-            service.submit(new HydrogenThread(phaser, i));
-            service.submit(new HydrogenThread(phaser, i));
+            service.submit(new Oxygen(phaser, i));
+            service.submit(new Hydrogen(phaser, i));
+            service.submit(new Hydrogen(phaser, i));
             try {
                 Thread.sleep(2);
             } catch (InterruptedException e) {
@@ -25,54 +25,57 @@ public class TaskOne {
         service.shutdown();
 
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
     }
 }
 
-
-class OxygenThread implements Runnable {
-    private final Phaser phaser;
-    private final int count;
-
-    public OxygenThread(Phaser phaser, int count) {
-        this.phaser = phaser;
-        this.count = count;
-        phaser.register();
+class Oxygen extends threadElement {
+    public Oxygen(Phaser phaser, int count) {
+        super(phaser, count);
     }
 
     @Override
     public void run() {
         releaseOxygen();
     }
-
-    private void releaseOxygen() {
-        if (count < phaser.getPhase()) {
-            phaser.arriveAndAwaitAdvance();
-        }
-        System.out.print("O");
-        phaser.arriveAndDeregister();
-    }
 }
 
-class HydrogenThread implements Runnable {
-    private final Phaser phaser;
-    private final int count;
-
-    public HydrogenThread(Phaser phaser, int count) {
-        this.phaser = phaser;
-        this.count = count;
-        phaser.register();
+class Hydrogen extends threadElement {
+    public Hydrogen(Phaser phaser, int count) {
+        super(phaser, count);
     }
 
     @Override
     public void run() {
         releaseHydrogen();
     }
+}
 
-    private void releaseHydrogen() {
+abstract class threadElement implements Runnable {
+    private final Phaser phaser;
+    private final int count;
+
+    public threadElement(Phaser phaser, int count) {
+        this.phaser = phaser;
+        this.count = count;
+        phaser.register();
+    }
+
+    @Override
+    abstract public void run();
+
+    public void releaseOxygen() {
+        if (count < phaser.getPhase()) {
+            phaser.arriveAndAwaitAdvance();
+        }
+        System.out.print("O");
+        phaser.arriveAndDeregister();
+    }
+
+    public void releaseHydrogen() {
         if (count < phaser.getPhase()) {
             phaser.arriveAndAwaitAdvance();
         }
